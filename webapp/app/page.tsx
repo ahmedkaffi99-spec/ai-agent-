@@ -9,6 +9,9 @@ export default function HomePage() {
         <li><Link href="/admin/agent">Agent IA (simple + pipeline multi-modele)</Link></li>
         <li><Link href="/admin/finances">Finances</Link></li>
         <li><Link href="/admin/taches">Taches / Projets</Link></li>
+        <li><Link href="/admin/commissions">Commissions</Link></li>
+        <li><Link href="/admin/mouvements">Mouvements de fonds</Link></li>
+        <li><Link href="/admin/rapport">Rapport IA (fin de journee)</Link></li>
       </ul>
     </div>
   );

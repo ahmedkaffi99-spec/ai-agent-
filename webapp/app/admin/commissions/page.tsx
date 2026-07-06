@@ -1,0 +1,225 @@
+'use client';
+
+import { useState } from 'react';
+import * as s from '@/lib/styles';
+
+type Ligne = {
+  id: number;
+  agent: string;
+  commission: number;
+  paye: number;
+  non_paye: number;
+  retrait: number;
+};
+
+type ProfilLigne = { id: number; libelle: string; montant: number };
+type Manuel = { commission_global: number; charges: number; balance: number };
+
+function aujourdHui() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export default function CommissionsPage() {
+  const [secret, setSecret] = useState('');
+  const [date, setDate] = useState(aujourdHui());
+  const [lignes, setLignes] = useState<Ligne[]>([]);
+  const [profil, setProfil] = useState<ProfilLigne[]>([]);
+  const [manuel, setManuel] = useState<Manuel>({ commission_global: 0, charges: 0, balance: 0 });
+  const [balanceRestant, setBalanceRestant] = useState(0);
+  const [error, setError] = useState('');
+  const [nouvelleLigne, setNouvelleLigne] = useState({ agent: '', commission: '', paye: '', non_paye: '', retrait: '' });
+  const [nouveauProfil, setNouveauProfil] = useState({ libelle: '', montant: '' });
+
+  const headers = { 'x-admin-secret': secret, 'Content-Type': 'application/json' };
+
+  async function charger() {
+    setError('');
+    const res = await fetch(`/api/commissions?date=${date}`, { headers: { 'x-admin-secret': secret } });
+    const data = await res.json();
+    if (!res.ok) return setError(data.error);
+    setLignes(data.lignes);
+    setProfil(data.profil);
+    setManuel(data.manuel);
+    setBalanceRestant(data.balanceRestant);
+  }
+
+  async function ajouterLigne(e: React.FormEvent) {
+    e.preventDefault();
+    await fetch('/api/commissions/lignes', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        date,
+        agent: nouvelleLigne.agent,
+        commission: parseFloat(nouvelleLigne.commission) || 0,
+        paye: parseFloat(nouvelleLigne.paye) || 0,
+        non_paye: parseFloat(nouvelleLigne.non_paye) || 0,
+        retrait: parseFloat(nouvelleLigne.retrait) || 0,
+      }),
+    });
+    setNouvelleLigne({ agent: '', commission: '', paye: '', non_paye: '', retrait: '' });
+    charger();
+  }
+
+  async function supprimerLigne(id: number) {
+    await fetch('/api/commissions/lignes', { method: 'DELETE', headers, body: JSON.stringify({ id }) });
+    charger();
+  }
+
+  async function ajouterProfil(e: React.FormEvent) {
+    e.preventDefault();
+    await fetch('/api/commissions/profil', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ date, libelle: nouveauProfil.libelle, montant: parseFloat(nouveauProfil.montant) || 0 }),
+    });
+    setNouveauProfil({ libelle: '', montant: '' });
+    charger();
+  }
+
+  async function supprimerProfil(id: number) {
+    await fetch('/api/commissions/profil', { method: 'DELETE', headers, body: JSON.stringify({ id }) });
+    charger();
+  }
+
+  async function sauvegarderManuel() {
+    await fetch('/api/commissions/manuel', { method: 'PUT', headers, body: JSON.stringify({ date, ...manuel }) });
+    charger();
+  }
+
+  const totalCommission = lignes.reduce((a, l) => a + Number(l.commission), 0);
+  const totalPaye = lignes.reduce((a, l) => a + Number(l.paye), 0);
+  const totalNonPaye = lignes.reduce((a, l) => a + Number(l.non_paye), 0);
+  const totalRetrait = lignes.reduce((a, l) => a + Number(l.retrait), 0);
+  const totalProfil = profil.reduce((a, p) => a + Number(p.montant), 0);
+  const profilNet = totalProfil - Number(manuel.charges || 0);
+  const balanceTotal = Number(manuel.balance || 0) + balanceRestant;
+
+  return (
+    <div style={{ maxWidth: 960, margin: '2rem auto', padding: '1rem' }}>
+      <h1>Commissions</h1>
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <input type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <button style={s.button} onClick={charger}>Charger</button>
+      </div>
+
+      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+
+      <div style={s.card}>
+        <h2 style={{ marginTop: 0 }}>Resume du {date}</h2>
+        <table style={s.table}>
+          <tbody>
+            <tr>
+              <td style={s.td}>Commission (cumulee)</td>
+              <td style={s.td}>
+                <input style={s.input} type="number" value={manuel.commission_global} onChange={(e) => setManuel({ ...manuel, commission_global: parseFloat(e.target.value) || 0 })} />
+              </td>
+              <td style={s.td}>Profil</td>
+              <td style={{ ...s.td, fontWeight: 700 }}>{totalProfil.toLocaleString('fr-FR')}</td>
+            </tr>
+            <tr>
+              <td style={s.td}>Charges</td>
+              <td style={s.td}>
+                <input style={s.input} type="number" value={manuel.charges} onChange={(e) => setManuel({ ...manuel, charges: parseFloat(e.target.value) || 0 })} />
+              </td>
+              <td style={s.td}>Profil net</td>
+              <td style={{ ...s.td, fontWeight: 700 }}>{profilNet.toLocaleString('fr-FR')}</td>
+            </tr>
+            <tr>
+              <td style={s.td}>Balance</td>
+              <td style={s.td}>
+                <input style={s.input} type="number" value={manuel.balance} onChange={(e) => setManuel({ ...manuel, balance: parseFloat(e.target.value) || 0 })} />
+              </td>
+              <td style={s.td}>Balance restante (mouvements de fonds)</td>
+              <td style={{ ...s.td, fontWeight: 700 }}>{balanceRestant.toLocaleString('fr-FR')}</td>
+            </tr>
+            <tr>
+              <td style={s.td} colSpan={2}></td>
+              <td style={s.td}>Balance totale</td>
+              <td style={{ ...s.td, fontWeight: 700 }}>{balanceTotal.toLocaleString('fr-FR')}</td>
+            </tr>
+          </tbody>
+        </table>
+        <button style={{ ...s.buttonSecondary, marginTop: '0.75rem' }} onClick={sauvegarderManuel}>Enregistrer</button>
+      </div>
+
+      <div style={s.card}>
+        <h2 style={{ marginTop: 0 }}>Par agent</h2>
+        <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={s.th}>Agent</th>
+              <th style={s.th}>Commission</th>
+              <th style={s.th}>Paye</th>
+              <th style={s.th}>Non paye</th>
+              <th style={s.th}>Retrait</th>
+              <th style={s.th}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map((l) => (
+              <tr key={l.id}>
+                <td style={s.td}>{l.agent}</td>
+                <td style={s.td}>{Number(l.commission).toLocaleString('fr-FR')}</td>
+                <td style={s.td}>{Number(l.paye).toLocaleString('fr-FR')}</td>
+                <td style={s.td}>{Number(l.non_paye).toLocaleString('fr-FR')}</td>
+                <td style={s.td}>{Number(l.retrait).toLocaleString('fr-FR')}</td>
+                <td style={s.td}><button style={s.buttonSecondary} onClick={() => supprimerLigne(l.id)}>Suppr.</button></td>
+              </tr>
+            ))}
+            <tr style={s.totalRow}>
+              <td style={s.td}>Total</td>
+              <td style={s.td}>{totalCommission.toLocaleString('fr-FR')}</td>
+              <td style={s.td}>{totalPaye.toLocaleString('fr-FR')}</td>
+              <td style={s.td}>{totalNonPaye.toLocaleString('fr-FR')}</td>
+              <td style={s.td}>{totalRetrait.toLocaleString('fr-FR')}</td>
+              <td style={s.td}></td>
+            </tr>
+          </tbody>
+        </table>
+        <form onSubmit={ajouterLigne} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+          <input style={{ ...s.input, width: 160 }} placeholder="Agent" value={nouvelleLigne.agent} onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, agent: e.target.value })} required />
+          <input style={{ ...s.input, width: 110 }} type="number" placeholder="Commission" value={nouvelleLigne.commission} onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, commission: e.target.value })} />
+          <input style={{ ...s.input, width: 110 }} type="number" placeholder="Paye" value={nouvelleLigne.paye} onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, paye: e.target.value })} />
+          <input style={{ ...s.input, width: 110 }} type="number" placeholder="Non paye" value={nouvelleLigne.non_paye} onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, non_paye: e.target.value })} />
+          <input style={{ ...s.input, width: 110 }} type="number" placeholder="Retrait" value={nouvelleLigne.retrait} onChange={(e) => setNouvelleLigne({ ...nouvelleLigne, retrait: e.target.value })} />
+          <button style={s.button} type="submit">Ajouter</button>
+        </form>
+      </div>
+
+      <div style={s.card}>
+        <h2 style={{ marginTop: 0 }}>Repartition du profil</h2>
+        <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={s.th}>Libelle</th>
+              <th style={s.th}>Montant</th>
+              <th style={s.th}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {profil.map((p) => (
+              <tr key={p.id}>
+                <td style={s.td}>{p.libelle}</td>
+                <td style={s.td}>{Number(p.montant).toLocaleString('fr-FR')}</td>
+                <td style={s.td}><button style={s.buttonSecondary} onClick={() => supprimerProfil(p.id)}>Suppr.</button></td>
+              </tr>
+            ))}
+            <tr style={s.totalRow}>
+              <td style={s.td}>Total profil</td>
+              <td style={s.td}>{totalProfil.toLocaleString('fr-FR')}</td>
+              <td style={s.td}></td>
+            </tr>
+          </tbody>
+        </table>
+        <form onSubmit={ajouterProfil} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+          <input style={{ ...s.input, width: 200 }} placeholder="Libelle (ex: retrait 2%)" value={nouveauProfil.libelle} onChange={(e) => setNouveauProfil({ ...nouveauProfil, libelle: e.target.value })} required />
+          <input style={{ ...s.input, width: 120 }} type="number" placeholder="Montant" value={nouveauProfil.montant} onChange={(e) => setNouveauProfil({ ...nouveauProfil, montant: e.target.value })} />
+          <button style={s.button} type="submit">Ajouter</button>
+        </form>
+      </div>
+    </div>
+  );
+}

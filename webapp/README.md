@@ -7,6 +7,9 @@ Application Next.js (App Router) privée : agent IA (Claude), pipeline multi-mod
 - `/admin/agent` — agent simple (Claude + recherche web) ou pipeline multi-agent (Groq -> Claude -> Gemini), au choix via un selecteur
 - `/admin/finances` — suivi de transactions + analyse IA
 - `/admin/taches` — suivi de taches/projets + enrichissement par recherche web IA
+- `/admin/commissions` — suivi des commissions par agent + repartition du profil, pour une date donnee
+- `/admin/mouvements` — mouvements de fonds mensuels (entrant / sortant / balance)
+- `/admin/rapport` — rapport IA de fin de journee, genere a partir des finances/commissions/mouvements du jour
 
 Chaque page/route demande un mot de passe (`ADMIN_SECRET`), envoye via le header `x-admin-secret`.
 
@@ -27,7 +30,7 @@ ADMIN_SECRET=
 
 ## Base de donnees (Supabase)
 
-Deux tables sont necessaires (deja creees sur le projet Supabase associe) :
+Tables necessaires : `transactions` et `taches` (`supabase/migrations/001...` si present, sinon voir historique), puis `commission_lignes`, `commission_profil_lignes`, `commission_manuel`, `mouvements_lignes` et `rapports_ia` — a creer en executant `supabase/migrations/002_commissions_mouvements_rapports.sql` dans Supabase → SQL Editor.
 
 ```sql
 create table transactions (
@@ -50,6 +53,8 @@ create table taches (
   created_at timestamptz not null default now()
 );
 ```
+
+Voir `supabase/migrations/002_commissions_mouvements_rapports.sql` pour le schema des commissions, mouvements de fonds et rapports IA.
 
 ## Developpement local
 
