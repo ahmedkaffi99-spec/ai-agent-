@@ -25,6 +25,7 @@ export default function CommissionsPage() {
   const [lignes, setLignes] = useState<Ligne[]>([]);
   const [profil, setProfil] = useState<ProfilLigne[]>([]);
   const [manuel, setManuel] = useState<Manuel>({ commission_global: 0 });
+  const [commissionSaisie, setCommissionSaisie] = useState('0');
   const [balanceRestant, setBalanceRestant] = useState(0);
   const [balancePrecedente, setBalancePrecedente] = useState(0);
   const [error, setError] = useState('');
@@ -41,6 +42,7 @@ export default function CommissionsPage() {
     setLignes(data.lignes);
     setProfil(data.profil);
     setManuel(data.manuel);
+    setCommissionSaisie(String(data.manuel.commission_global ?? 0));
     setBalanceRestant(data.balanceRestant);
     setBalancePrecedente(data.balancePrecedente);
   }
@@ -88,7 +90,7 @@ export default function CommissionsPage() {
     await fetch('/api/commissions/manuel', {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ date, commission_global: manuel.commission_global, balance_total: balanceTotal }),
+      body: JSON.stringify({ date, commission_global: parseFloat(commissionSaisie) || 0, balance_total: balanceTotal }),
     });
     charger();
   }
@@ -133,8 +135,8 @@ export default function CommissionsPage() {
                 <input
                   style={s.input}
                   type="number"
-                  value={manuel.commission_global}
-                  onChange={(e) => setManuel({ ...manuel, commission_global: parseFloat(e.target.value) || 0 })}
+                  value={commissionSaisie}
+                  onChange={(e) => setCommissionSaisie(e.target.value)}
                 />
               </td>
               <td style={{ ...s.td, fontWeight: 700 }}>{totalProfil.toLocaleString('fr-FR')}</td>
