@@ -3,29 +3,14 @@ import * as s from '@/lib/styles';
 
 const sections = [
   {
-    href: '/admin/agent',
-    titre: 'Agent IA',
-    description: 'Agent simple (Claude + recherche web) ou pipeline multi-modele (Groq -> Claude -> Gemini).',
-  },
-  {
-    href: '/admin/finances',
-    titre: 'Finances',
-    description: 'Suivi de transactions personnelles avec analyse IA (totaux, tendances, conseils).',
-  },
-  {
-    href: '/admin/taches',
-    titre: 'Taches / Projets',
-    description: 'Suivi de taches avec enrichissement par recherche web IA.',
-  },
-  {
     href: '/admin/commissions',
     titre: 'Commissions',
-    description: 'Commissions par agent, repartition du profil, calculs automatiques.',
+    description: 'Bulletin de commissions par agent, retenues, repartition du profit et solde restant.',
   },
   {
     href: '/admin/mouvements',
     titre: 'Mouvements de fonds',
-    description: 'Entrant / sortant / balance, par mois.',
+    description: 'Entrant / sortant / balance, par mois, avec totaux automatiques.',
   },
   {
     href: '/admin/rapport',

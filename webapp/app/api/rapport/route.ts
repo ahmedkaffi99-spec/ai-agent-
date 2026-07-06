@@ -35,35 +35,34 @@ export async function POST(req: NextRequest) {
 
   const mois = date.slice(0, 7);
 
-  const [transactionsRes, commissionRes, profilRes, mouvementsRes] = await Promise.all([
-    supabase.from('transactions').select('*').eq('date', date),
+  const [commissionRes, profilRes, manuelRes, mouvementsRes] = await Promise.all([
     supabase.from('commission_lignes').select('*').eq('date', date),
     supabase.from('commission_profil_lignes').select('*').eq('date', date),
+    supabase.from('commission_manuel').select('*').eq('date', date).maybeSingle(),
     supabase.from('mouvements_lignes').select('*').eq('mois', mois),
   ]);
 
-  for (const r of [transactionsRes, commissionRes, profilRes, mouvementsRes]) {
+  for (const r of [commissionRes, profilRes, manuelRes, mouvementsRes]) {
     if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 });
   }
 
-  const transactions = transactionsRes.data ?? [];
   const commissions = commissionRes.data ?? [];
   const profil = profilRes.data ?? [];
+  const manuel = manuelRes.data;
   const mouvements = mouvementsRes.data ?? [];
 
-  if (transactions.length === 0 && commissions.length === 0 && profil.length === 0 && mouvements.length === 0) {
+  if (commissions.length === 0 && profil.length === 0 && mouvements.length === 0) {
     return NextResponse.json({ error: 'Aucune donnee pour cette date.' }, { status: 400 });
   }
 
   const texte = `
-Transactions du ${date} :
-${transactions.map((t) => `${t.type} | ${t.categorie} | ${t.montant} | ${t.description ?? ''}`).join('\n') || '(aucune)'}
-
 Commissions du ${date} (agent | commission | paye | non paye | retrait) :
 ${commissions.map((c) => `${c.agent} | ${c.commission} | ${c.paye} | ${c.non_paye} | ${c.retrait}`).join('\n') || '(aucune)'}
 
 Repartition du profil du ${date} :
 ${profil.map((p) => `${p.libelle} | ${p.montant}`).join('\n') || '(aucune)'}
+
+Champs manuels du ${date} : commission cumulee=${manuel?.commission_global ?? 0}, charges=${manuel?.charges ?? 0}, balance=${manuel?.balance ?? 0}
 
 Mouvements de fonds du mois ${mois} (section | libelle | montant) :
 ${mouvements.map((m) => `${m.section} | ${m.libelle} | ${m.montant}`).join('\n') || '(aucun)'}
@@ -75,7 +74,7 @@ ${mouvements.map((m) => `${m.section} | ${m.libelle} | ${m.montant}`).join('\n')
     messages: [
       {
         role: 'user',
-        content: `Tu es l'assistant financier personnel de l'utilisateur. Voici les donnees brutes de sa journee du ${date} :\n\n${texte}\n\nRedige un rapport de fin de journee professionnel et concis en francais avec :\n1. Resume des chiffres cles (commissions, profil, entrees/sorties de fonds)\n2. Anomalies ou points d'attention (ex: non paye important, gros retraits, ecarts)\n3. 2-3 recommandations concretes pour le lendemain\n\nUtilise un format clair avec des titres courts, pas de tableau markdown complexe.`,
+        content: `Tu es l'assistant financier personnel de l'utilisateur, qui gere une activite de commissions (agents/wakiil) avec mouvements de fonds. Voici les donnees brutes de sa journee du ${date} :\n\n${texte}\n\nRedige un rapport de fin de journee professionnel et concis en francais avec :\n1. Resume des chiffres cles (commissions, profit, entrees/sorties de fonds)\n2. Anomalies ou points d'attention (ex: non paye important, gros retraits, ecarts)\n3. 2-3 recommandations concretes pour le lendemain\n\nUtilise un format clair avec des titres courts, pas de tableau markdown complexe.`,
       },
     ],
   });

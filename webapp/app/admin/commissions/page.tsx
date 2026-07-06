@@ -97,8 +97,8 @@ export default function CommissionsPage() {
 
   return (
     <div style={s.page}>
-      <h1 style={s.pageTitle}>Commissions</h1>
-      <p style={s.pageSubtitle}>Suivi des commissions par agent et de la repartition du profil, pour une date donnee.</p>
+      <h1 style={s.pageTitle}>Bulletin de commissions</h1>
+      <p style={s.pageSubtitle}>Detail par agent (commission, retenue, net, solde du) et repartition du profit, pour une date donnee.</p>
 
       <div style={s.toolbar}>
         <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
@@ -147,15 +147,16 @@ export default function CommissionsPage() {
       </div>
 
       <div style={s.card}>
-        <h2 style={s.cardTitle}>Par agent</h2>
+        <h2 style={s.cardTitle}>Detail par agent</h2>
         <table style={s.table}>
           <thead>
             <tr>
               <th style={s.th}>Agent</th>
-              <th style={s.th}>Commission</th>
+              <th style={s.th}>Commission brute</th>
+              <th style={s.th}>Retenue (retrait)</th>
+              <th style={s.th}>Net</th>
               <th style={s.th}>Paye</th>
-              <th style={s.th}>Non paye</th>
-              <th style={s.th}>Retrait</th>
+              <th style={s.th}>Solde du</th>
               <th style={s.th}></th>
             </tr>
           </thead>
@@ -164,18 +165,20 @@ export default function CommissionsPage() {
               <tr key={l.id}>
                 <td style={s.td}>{l.agent}</td>
                 <td style={s.td}>{Number(l.commission).toLocaleString('fr-FR')}</td>
-                <td style={s.td}>{Number(l.paye).toLocaleString('fr-FR')}</td>
-                <td style={s.td}>{Number(l.non_paye).toLocaleString('fr-FR')}</td>
                 <td style={s.td}>{Number(l.retrait).toLocaleString('fr-FR')}</td>
+                <td style={{ ...s.td, fontWeight: 600 }}>{(Number(l.commission) - Number(l.retrait)).toLocaleString('fr-FR')}</td>
+                <td style={s.td}>{Number(l.paye).toLocaleString('fr-FR')}</td>
+                <td style={{ ...s.td, color: Number(l.non_paye) > 0 ? s.colors.danger : s.colors.text }}>{Number(l.non_paye).toLocaleString('fr-FR')}</td>
                 <td style={s.td}><button style={s.buttonSecondary} onClick={() => supprimerLigne(l.id)}>Suppr.</button></td>
               </tr>
             ))}
             <tr style={s.totalRow}>
               <td style={s.td}>Total</td>
               <td style={s.td}>{totalCommission.toLocaleString('fr-FR')}</td>
+              <td style={s.td}>{totalRetrait.toLocaleString('fr-FR')}</td>
+              <td style={s.td}>{(totalCommission - totalRetrait).toLocaleString('fr-FR')}</td>
               <td style={s.td}>{totalPaye.toLocaleString('fr-FR')}</td>
               <td style={s.td}>{totalNonPaye.toLocaleString('fr-FR')}</td>
-              <td style={s.td}>{totalRetrait.toLocaleString('fr-FR')}</td>
               <td style={s.td}></td>
             </tr>
           </tbody>

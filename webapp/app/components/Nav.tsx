@@ -6,11 +6,8 @@ import { colors } from '@/lib/styles';
 
 const liens = [
   { href: '/', label: 'Accueil' },
-  { href: '/admin/agent', label: 'Agent IA' },
-  { href: '/admin/finances', label: 'Finances' },
-  { href: '/admin/taches', label: 'Taches' },
   { href: '/admin/commissions', label: 'Commissions' },
-  { href: '/admin/mouvements', label: 'Mouvements' },
+  { href: '/admin/mouvements', label: 'Mouvements de fonds' },
   { href: '/admin/rapport', label: 'Rapport IA' },
 ];
 
