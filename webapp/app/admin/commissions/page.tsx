@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as s from '@/lib/styles';
+import { useAdminSecret } from '@/lib/useAdminSecret';
 
 type Ligne = {
   id: number;
@@ -20,7 +21,7 @@ function aujourdHui() {
 }
 
 export default function CommissionsPage() {
-  const [secret, setSecret] = useState('');
+  const [secret, setSecret] = useAdminSecret();
   const [date, setDate] = useState(aujourdHui());
   const [lignes, setLignes] = useState<Ligne[]>([]);
   const [profil, setProfil] = useState<ProfilLigne[]>([]);
@@ -46,6 +47,11 @@ export default function CommissionsPage() {
     setBalanceRestant(data.balanceRestant);
     setBalancePrecedente(data.balancePrecedente);
   }
+
+  useEffect(() => {
+    if (secret) charger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secret]);
 
   async function ajouterLigne(e: React.FormEvent) {
     e.preventDefault();

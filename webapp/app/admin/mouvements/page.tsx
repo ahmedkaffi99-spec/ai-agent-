@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as s from '@/lib/styles';
+import { useAdminSecret } from '@/lib/useAdminSecret';
 
 type Ligne = { id: number; libelle: string; montant: number };
 type Section = 'entrant' | 'sortant' | 'balance';
@@ -17,7 +18,7 @@ const titres: Record<Section, string> = {
 };
 
 export default function MouvementsPage() {
-  const [secret, setSecret] = useState('');
+  const [secret, setSecret] = useAdminSecret();
   const [mois, setMois] = useState(moisCourant());
   const [lignes, setLignes] = useState<Record<Section, Ligne[]>>({ entrant: [], sortant: [], balance: [] });
   const [error, setError] = useState('');
@@ -36,6 +37,11 @@ export default function MouvementsPage() {
     if (!res.ok) return setError(data.error);
     setLignes({ entrant: data.entrant, sortant: data.sortant, balance: data.balance });
   }
+
+  useEffect(() => {
+    if (secret) charger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secret]);
 
   async function ajouter(section: Section, e: React.FormEvent) {
     e.preventDefault();

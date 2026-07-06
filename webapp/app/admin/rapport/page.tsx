@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as s from '@/lib/styles';
+import { useAdminSecret } from '@/lib/useAdminSecret';
 
 function aujourdHui() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export default function RapportPage() {
-  const [secret, setSecret] = useState('');
+  const [secret, setSecret] = useAdminSecret();
   const [date, setDate] = useState(aujourdHui());
   const [historique, setHistorique] = useState<{ date: string }[]>([]);
   const [contenu, setContenu] = useState('');
@@ -23,6 +24,11 @@ export default function RapportPage() {
     setHistorique(data.historique);
     setContenu(data.rapport?.contenu ?? '');
   }
+
+  useEffect(() => {
+    if (secret) charger(date);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secret]);
 
   async function generer() {
     setLoading(true);
