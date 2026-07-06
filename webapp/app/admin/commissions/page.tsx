@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import * as s from '@/lib/styles';
 import { useAdminSecret } from '@/lib/useAdminSecret';
 
@@ -21,7 +22,7 @@ function aujourdHui() {
 }
 
 export default function CommissionsPage() {
-  const [secret, setSecret] = useAdminSecret();
+  const [secret] = useAdminSecret();
   const [date, setDate] = useState(aujourdHui());
   const [lignes, setLignes] = useState<Ligne[]>([]);
   const [profil, setProfil] = useState<ProfilLigne[]>([]);
@@ -109,13 +110,23 @@ export default function CommissionsPage() {
   const profilNet = totalProfil;
   const balanceTotal = balancePrecedente + balanceRestant;
 
+  if (!secret) {
+    return (
+      <div style={s.page}>
+        <h1 style={s.pageTitle}>Bulletin de commissions</h1>
+        <p style={s.pageSubtitle}>
+          Non connecte. <Link href="/">Va sur l'accueil</Link> pour entrer le mot de passe.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={s.page}>
       <h1 style={s.pageTitle}>Bulletin de commissions</h1>
       <p style={s.pageSubtitle}>Detail par agent (commission, retenue, net, solde du) et repartition du profit, pour une date donnee.</p>
 
       <div style={s.toolbar}>
-        <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
         <input style={{ ...s.input, width: 170 }} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <button style={s.button} onClick={charger}>Charger</button>
       </div>

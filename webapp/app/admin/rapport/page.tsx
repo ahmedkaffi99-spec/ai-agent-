@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import * as s from '@/lib/styles';
 import { useAdminSecret } from '@/lib/useAdminSecret';
 
@@ -9,7 +10,7 @@ function aujourdHui() {
 }
 
 export default function RapportPage() {
-  const [secret, setSecret] = useAdminSecret();
+  const [secret] = useAdminSecret();
   const [date, setDate] = useState(aujourdHui());
   const [historique, setHistorique] = useState<{ date: string }[]>([]);
   const [contenu, setContenu] = useState('');
@@ -47,13 +48,23 @@ export default function RapportPage() {
     setLoading(false);
   }
 
+  if (!secret) {
+    return (
+      <div style={s.page}>
+        <h1 style={s.pageTitle}>Rapport IA de fin de journee</h1>
+        <p style={s.pageSubtitle}>
+          Non connecte. <Link href="/">Va sur l'accueil</Link> pour entrer le mot de passe.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={s.page}>
       <h1 style={s.pageTitle}>Rapport IA de fin de journee</h1>
       <p style={s.pageSubtitle}>Compte-rendu genere par Claude a partir des finances, commissions et mouvements du jour.</p>
 
       <div style={s.toolbar}>
-        <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
         <input style={{ ...s.input, width: 170 }} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <button style={s.buttonSecondary} onClick={() => charger(date)}>Charger</button>
         <button style={s.button} onClick={generer} disabled={loading}>

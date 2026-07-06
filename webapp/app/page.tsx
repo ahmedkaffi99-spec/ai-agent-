@@ -1,5 +1,9 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 import * as s from '@/lib/styles';
+import { useAdminSecret } from '@/lib/useAdminSecret';
 
 const sections = [
   {
@@ -20,10 +24,64 @@ const sections = [
 ];
 
 export default function HomePage() {
+  const [secret, setSecret] = useAdminSecret();
+  const [saisie, setSaisie] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function seConnecter(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const res = await fetch('/api/verifier', { headers: { 'x-admin-secret': saisie } });
+    if (res.ok) {
+      setSecret(saisie);
+    } else {
+      setError('Mot de passe incorrect.');
+    }
+    setLoading(false);
+  }
+
+  function seDeconnecter() {
+    setSecret('');
+    setSaisie('');
+  }
+
+  if (!secret) {
+    return (
+      <div style={{ ...s.page, maxWidth: 420 }}>
+        <h1 style={s.pageTitle}>Back-office IA</h1>
+        <p style={s.pageSubtitle}>Outil personnel — pas destine aux visiteurs publics.</p>
+        <div style={s.card}>
+          <form onSubmit={seConnecter} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            <label style={s.label}>Mot de passe admin</label>
+            <input
+              style={s.input}
+              type="password"
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
+              autoFocus
+              required
+            />
+            <button style={s.button} type="submit" disabled={loading}>
+              {loading ? 'Verification...' : 'Se connecter'}
+            </button>
+          </form>
+          {error && <p style={{ ...s.errorText, marginTop: '0.75rem', marginBottom: 0 }}>{error}</p>}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={s.page}>
-      <h1 style={s.pageTitle}>Back-office IA</h1>
-      <p style={s.pageSubtitle}>Outil personnel — pas destine aux visiteurs publics.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={s.pageTitle}>Back-office IA</h1>
+          <p style={s.pageSubtitle}>Outil personnel — pas destine aux visiteurs publics.</p>
+        </div>
+        <button style={s.buttonSecondary} onClick={seDeconnecter}>Se deconnecter</button>
+      </div>
 
       <div
         style={{

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import * as s from '@/lib/styles';
 import { useAdminSecret } from '@/lib/useAdminSecret';
 
@@ -18,7 +19,7 @@ const titres: Record<Section, string> = {
 };
 
 export default function MouvementsPage() {
-  const [secret, setSecret] = useAdminSecret();
+  const [secret] = useAdminSecret();
   const [mois, setMois] = useState(moisCourant());
   const [lignes, setLignes] = useState<Record<Section, Ligne[]>>({ entrant: [], sortant: [], balance: [] });
   const [error, setError] = useState('');
@@ -113,13 +114,23 @@ export default function MouvementsPage() {
     );
   }
 
+  if (!secret) {
+    return (
+      <div style={s.page}>
+        <h1 style={s.pageTitle}>Mouvements de fonds</h1>
+        <p style={s.pageSubtitle}>
+          Non connecte. <Link href="/">Va sur l'accueil</Link> pour entrer le mot de passe.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={s.page}>
       <h1 style={s.pageTitle}>Mouvements de fonds</h1>
       <p style={s.pageSubtitle}>Entrant / sortant / balance, par mois.</p>
 
       <div style={s.toolbar}>
-        <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
         <input style={{ ...s.input, width: 170 }} type="month" value={mois} onChange={(e) => setMois(e.target.value)} />
         <button style={s.button} onClick={charger}>Charger</button>
       </div>
