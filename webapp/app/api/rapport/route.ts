@@ -62,7 +62,7 @@ ${commissions.map((c) => `${c.agent} | ${c.commission} | ${c.paye} | ${c.non_pay
 Repartition du profil du ${date} :
 ${profil.map((p) => `${p.libelle} | ${p.montant}`).join('\n') || '(aucune)'}
 
-Champs manuels du ${date} : commission cumulee=${manuel?.commission_global ?? 0}, charges=${manuel?.charges ?? 0}, balance=${manuel?.balance ?? 0}
+Resume du ${date} : commission=${manuel?.commission_global ?? 0}, balance totale=${manuel?.balance_total ?? 0}
 
 Mouvements de fonds du mois ${mois} (section | libelle | montant) :
 ${mouvements.map((m) => `${m.section} | ${m.libelle} | ${m.montant}`).join('\n') || '(aucun)'}

@@ -15,8 +15,7 @@ export async function PUT(req: NextRequest) {
     .upsert({
       date: body.date,
       commission_global: body.commission_global ?? 0,
-      charges: body.charges ?? 0,
-      balance: body.balance ?? 0,
+      balance_total: body.balance_total ?? 0,
       updated_at: new Date().toISOString(),
     })
     .select()

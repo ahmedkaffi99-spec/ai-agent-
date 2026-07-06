@@ -14,23 +14,32 @@ export async function GET(req: NextRequest) {
 
   const mois = date.slice(0, 7);
 
-  const [lignesRes, profilRes, manuelRes, balanceRes] = await Promise.all([
+  const [lignesRes, profilRes, manuelRes, balanceRes, precedentRes] = await Promise.all([
     supabase.from('commission_lignes').select('*').eq('date', date).order('id'),
     supabase.from('commission_profil_lignes').select('*').eq('date', date).order('id'),
     supabase.from('commission_manuel').select('*').eq('date', date).maybeSingle(),
     supabase.from('mouvements_lignes').select('montant').eq('mois', mois).eq('section', 'balance'),
+    supabase
+      .from('commission_manuel')
+      .select('balance_total')
+      .lt('date', date)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
-  for (const r of [lignesRes, profilRes, manuelRes, balanceRes]) {
+  for (const r of [lignesRes, profilRes, manuelRes, balanceRes, precedentRes]) {
     if (r.error) return NextResponse.json({ error: r.error.message }, { status: 500 });
   }
 
   const balanceRestant = (balanceRes.data ?? []).reduce((s, l) => s + Number(l.montant), 0);
+  const balancePrecedente = Number(precedentRes.data?.balance_total ?? 0);
 
   return NextResponse.json({
     lignes: lignesRes.data,
     profil: profilRes.data,
-    manuel: manuelRes.data ?? { date, commission_global: 0, charges: 0, balance: 0 },
+    manuel: manuelRes.data ?? { date, commission_global: 0 },
     balanceRestant,
+    balancePrecedente,
   });
 }

@@ -13,7 +13,7 @@ type Ligne = {
 };
 
 type ProfilLigne = { id: number; libelle: string; montant: number };
-type Manuel = { commission_global: number; charges: number; balance: number };
+type Manuel = { commission_global: number };
 
 function aujourdHui() {
   return new Date().toISOString().slice(0, 10);
@@ -24,8 +24,9 @@ export default function CommissionsPage() {
   const [date, setDate] = useState(aujourdHui());
   const [lignes, setLignes] = useState<Ligne[]>([]);
   const [profil, setProfil] = useState<ProfilLigne[]>([]);
-  const [manuel, setManuel] = useState<Manuel>({ commission_global: 0, charges: 0, balance: 0 });
+  const [manuel, setManuel] = useState<Manuel>({ commission_global: 0 });
   const [balanceRestant, setBalanceRestant] = useState(0);
+  const [balancePrecedente, setBalancePrecedente] = useState(0);
   const [error, setError] = useState('');
   const [nouvelleLigne, setNouvelleLigne] = useState({ agent: '', commission: '', paye: '', non_paye: '', retrait: '' });
   const [nouveauProfil, setNouveauProfil] = useState({ libelle: '', montant: '' });
@@ -41,6 +42,7 @@ export default function CommissionsPage() {
     setProfil(data.profil);
     setManuel(data.manuel);
     setBalanceRestant(data.balanceRestant);
+    setBalancePrecedente(data.balancePrecedente);
   }
 
   async function ajouterLigne(e: React.FormEvent) {
@@ -83,7 +85,11 @@ export default function CommissionsPage() {
   }
 
   async function sauvegarderManuel() {
-    await fetch('/api/commissions/manuel', { method: 'PUT', headers, body: JSON.stringify({ date, ...manuel }) });
+    await fetch('/api/commissions/manuel', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ date, commission_global: manuel.commission_global, balance_total: balanceTotal }),
+    });
     charger();
   }
 
@@ -92,8 +98,8 @@ export default function CommissionsPage() {
   const totalNonPaye = lignes.reduce((a, l) => a + Number(l.non_paye), 0);
   const totalRetrait = lignes.reduce((a, l) => a + Number(l.retrait), 0);
   const totalProfil = profil.reduce((a, p) => a + Number(p.montant), 0);
-  const profilNet = totalProfil - Number(manuel.charges || 0);
-  const balanceTotal = Number(manuel.balance || 0) + balanceRestant;
+  const profilNet = totalProfil;
+  const balanceTotal = balancePrecedente + balanceRestant;
 
   return (
     <div style={s.page}>
@@ -111,39 +117,39 @@ export default function CommissionsPage() {
       <div style={s.card}>
         <h2 style={s.cardTitle}>Resume du {date}</h2>
         <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={s.th}>Commission</th>
+              <th style={s.th}>Profil</th>
+              <th style={s.th}>Profil net</th>
+              <th style={s.th}>Balance</th>
+              <th style={s.th}>Balance restante</th>
+              <th style={s.th}>Balance totale</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
-              <td style={s.td}>Commission (cumulee)</td>
               <td style={s.td}>
-                <input style={s.input} type="number" value={manuel.commission_global} onChange={(e) => setManuel({ ...manuel, commission_global: parseFloat(e.target.value) || 0 })} />
+                <input
+                  style={s.input}
+                  type="number"
+                  value={manuel.commission_global}
+                  onChange={(e) => setManuel({ ...manuel, commission_global: parseFloat(e.target.value) || 0 })}
+                />
               </td>
-              <td style={s.td}>Profil</td>
               <td style={{ ...s.td, fontWeight: 700 }}>{totalProfil.toLocaleString('fr-FR')}</td>
-            </tr>
-            <tr>
-              <td style={s.td}>Charges</td>
-              <td style={s.td}>
-                <input style={s.input} type="number" value={manuel.charges} onChange={(e) => setManuel({ ...manuel, charges: parseFloat(e.target.value) || 0 })} />
-              </td>
-              <td style={s.td}>Profil net</td>
               <td style={{ ...s.td, fontWeight: 700 }}>{profilNet.toLocaleString('fr-FR')}</td>
-            </tr>
-            <tr>
-              <td style={s.td}>Balance</td>
-              <td style={s.td}>
-                <input style={s.input} type="number" value={manuel.balance} onChange={(e) => setManuel({ ...manuel, balance: parseFloat(e.target.value) || 0 })} />
-              </td>
-              <td style={s.td}>Balance restante (mouvements de fonds)</td>
+              <td style={{ ...s.td, fontWeight: 700 }}>{balancePrecedente.toLocaleString('fr-FR')}</td>
               <td style={{ ...s.td, fontWeight: 700 }}>{balanceRestant.toLocaleString('fr-FR')}</td>
-            </tr>
-            <tr>
-              <td style={s.td} colSpan={2}></td>
-              <td style={s.td}>Balance totale</td>
               <td style={{ ...s.td, fontWeight: 700 }}>{balanceTotal.toLocaleString('fr-FR')}</td>
             </tr>
           </tbody>
         </table>
-        <button style={{ ...s.buttonSecondary, marginTop: '0.75rem' }} onClick={sauvegarderManuel}>Enregistrer</button>
+        <p style={{ color: s.colors.muted, fontSize: '0.8rem', marginTop: '0.5rem' }}>
+          Seule la commission se saisit manuellement. Profil, profil net, balance, balance restante et balance totale
+          sont calcules automatiquement (balance = balance totale du jour precedent).
+        </p>
+        <button style={{ ...s.buttonSecondary, marginTop: '0.5rem' }} onClick={sauvegarderManuel}>Enregistrer</button>
       </div>
 
       <div style={s.card}>
