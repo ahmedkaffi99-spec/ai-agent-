@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import * as s from '@/lib/styles';
 
 type Transaction = {
   id: number;
@@ -66,80 +67,93 @@ export default function FinancesPage() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Finances</h1>
+    <div style={s.page}>
+      <h1 style={s.pageTitle}>Finances</h1>
+      <p style={s.pageSubtitle}>Suivi de transactions personnelles avec analyse IA.</p>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div style={s.toolbar}>
         <input
+          style={{ ...s.input, width: 200 }}
           type="password"
           placeholder="Mot de passe admin"
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <button onClick={charger}>Charger</button>
+        <button style={s.button} onClick={charger}>Charger</button>
       </div>
 
-      <form onSubmit={ajouter} style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0', flexWrap: 'wrap' }}>
-        <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
-        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-          <option value="depense">Depense</option>
-          <option value="revenu">Revenu</option>
-        </select>
-        <input
-          placeholder="Categorie"
-          value={form.categorie}
-          onChange={(e) => setForm({ ...form, categorie: e.target.value })}
-          required
-        />
-        <input
-          placeholder="Description"
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-        />
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Montant"
-          value={form.montant}
-          onChange={(e) => setForm({ ...form, montant: e.target.value })}
-          required
-        />
-        <button type="submit">Ajouter</button>
-      </form>
+      <div style={s.card}>
+        <h2 style={s.cardTitle}>Nouvelle transaction</h2>
+        <form onSubmit={ajouter} style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <input style={{ ...s.input, width: 150 }} type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
+          <select style={{ ...s.select, width: 130 }} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+            <option value="depense">Depense</option>
+            <option value="revenu">Revenu</option>
+          </select>
+          <input
+            style={{ ...s.input, width: 150 }}
+            placeholder="Categorie"
+            value={form.categorie}
+            onChange={(e) => setForm({ ...form, categorie: e.target.value })}
+            required
+          />
+          <input
+            style={{ ...s.input, width: 200 }}
+            placeholder="Description"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+          <input
+            style={{ ...s.input, width: 120 }}
+            type="number"
+            step="0.01"
+            placeholder="Montant"
+            value={form.montant}
+            onChange={(e) => setForm({ ...form, montant: e.target.value })}
+            required
+          />
+          <button style={s.button} type="submit">Ajouter</button>
+        </form>
+      </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={s.errorText}>{error}</p>}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Categorie</th>
-            <th>Description</th>
-            <th>Montant</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((t) => (
-            <tr key={t.id}>
-              <td>{t.date}</td>
-              <td>{t.type}</td>
-              <td>{t.categorie}</td>
-              <td>{t.description}</td>
-              <td style={{ color: t.type === 'depense' ? 'crimson' : 'seagreen' }}>{t.montant}e</td>
-              <td>
-                <button onClick={() => supprimer(t.id)}>Suppr.</button>
-              </td>
+      <div style={s.card}>
+        <h2 style={s.cardTitle}>Transactions</h2>
+        <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={s.th}>Date</th>
+              <th style={s.th}>Type</th>
+              <th style={s.th}>Categorie</th>
+              <th style={s.th}>Description</th>
+              <th style={s.th}>Montant</th>
+              <th style={s.th}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {transactions.map((t) => (
+              <tr key={t.id}>
+                <td style={s.td}>{t.date}</td>
+                <td style={s.td}>{t.type}</td>
+                <td style={s.td}>{t.categorie}</td>
+                <td style={s.td}>{t.description}</td>
+                <td style={{ ...s.td, color: t.type === 'depense' ? s.colors.danger : s.colors.success, fontWeight: 600 }}>{t.montant}€</td>
+                <td style={s.td}>
+                  <button style={s.buttonSecondary} onClick={() => supprimer(t.id)}>Suppr.</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <button onClick={analyser} disabled={loading} style={{ marginTop: '1rem' }}>
-        {loading ? 'Analyse en cours...' : "Analyser avec l'IA"}
-      </button>
-      {analyse && <pre style={{ whiteSpace: 'pre-wrap', marginTop: '1rem' }}>{analyse}</pre>}
+      <div style={s.card}>
+        <button style={s.button} onClick={analyser} disabled={loading}>
+          {loading ? 'Analyse en cours...' : "Analyser avec l'IA"}
+        </button>
+        {analyse && <pre style={{ whiteSpace: 'pre-wrap', marginTop: '1rem', fontFamily: 'inherit' }}>{analyse}</pre>}
+      </div>
     </div>
   );
 }

@@ -96,19 +96,20 @@ export default function CommissionsPage() {
   const balanceTotal = Number(manuel.balance || 0) + balanceRestant;
 
   return (
-    <div style={{ maxWidth: 960, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Commissions</h1>
+    <div style={s.page}>
+      <h1 style={s.pageTitle}>Commissions</h1>
+      <p style={s.pageSubtitle}>Suivi des commissions par agent et de la repartition du profil, pour une date donnee.</p>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', alignItems: 'center' }}>
-        <input type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <div style={s.toolbar}>
+        <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
+        <input style={{ ...s.input, width: 170 }} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <button style={s.button} onClick={charger}>Charger</button>
       </div>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <p style={s.errorText}>{error}</p>}
 
       <div style={s.card}>
-        <h2 style={{ marginTop: 0 }}>Resume du {date}</h2>
+        <h2 style={s.cardTitle}>Resume du {date}</h2>
         <table style={s.table}>
           <tbody>
             <tr>
@@ -146,7 +147,7 @@ export default function CommissionsPage() {
       </div>
 
       <div style={s.card}>
-        <h2 style={{ marginTop: 0 }}>Par agent</h2>
+        <h2 style={s.cardTitle}>Par agent</h2>
         <table style={s.table}>
           <thead>
             <tr>
@@ -190,7 +191,7 @@ export default function CommissionsPage() {
       </div>
 
       <div style={s.card}>
-        <h2 style={{ marginTop: 0 }}>Repartition du profil</h2>
+        <h2 style={s.cardTitle}>Repartition du profil</h2>
         <table style={s.table}>
           <thead>
             <tr>

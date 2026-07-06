@@ -42,30 +42,31 @@ export default function RapportPage() {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Rapport IA de fin de journee</h1>
+    <div style={s.page}>
+      <h1 style={s.pageTitle}>Rapport IA de fin de journee</h1>
+      <p style={s.pageSubtitle}>Compte-rendu genere par Claude a partir des finances, commissions et mouvements du jour.</p>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', alignItems: 'center' }}>
-        <input type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <div style={s.toolbar}>
+        <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
+        <input style={{ ...s.input, width: 170 }} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <button style={s.buttonSecondary} onClick={() => charger(date)}>Charger</button>
         <button style={s.button} onClick={generer} disabled={loading}>
           {loading ? 'Generation...' : 'Generer le rapport'}
         </button>
       </div>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <p style={s.errorText}>{error}</p>}
 
       {contenu && (
         <div style={s.card}>
-          <h2 style={{ marginTop: 0 }}>Rapport du {date}</h2>
+          <h2 style={s.cardTitle}>Rapport du {date}</h2>
           <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{contenu}</div>
         </div>
       )}
 
       {historique.length > 0 && (
         <div style={s.card}>
-          <h2 style={{ marginTop: 0 }}>Historique</h2>
+          <h2 style={s.cardTitle}>Historique</h2>
           <ul>
             {historique.map((h) => (
               <li key={h.date}>

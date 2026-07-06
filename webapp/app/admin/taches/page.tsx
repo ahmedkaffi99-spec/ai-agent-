@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import * as s from '@/lib/styles';
 
 type Tache = {
   id: number;
@@ -71,62 +72,69 @@ export default function TachesPage() {
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Taches / Projets</h1>
+    <div style={s.page}>
+      <h1 style={s.pageTitle}>Taches / Projets</h1>
+      <p style={s.pageSubtitle}>Suivi de taches avec enrichissement par recherche web IA.</p>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div style={s.toolbar}>
         <input
+          style={{ ...s.input, width: 200 }}
           type="password"
           placeholder="Mot de passe admin"
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <button onClick={charger}>Charger</button>
+        <button style={s.button} onClick={charger}>Charger</button>
       </div>
 
-      <form onSubmit={ajouter} style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0', flexWrap: 'wrap' }}>
-        <input
-          placeholder="Titre"
-          value={form.titre}
-          onChange={(e) => setForm({ ...form, titre: e.target.value })}
-          required
-        />
-        <input
-          placeholder="Projet"
-          value={form.projet}
-          onChange={(e) => setForm({ ...form, projet: e.target.value })}
-        />
-        <input type="date" value={form.echeance} onChange={(e) => setForm({ ...form, echeance: e.target.value })} />
-        <button type="submit">Ajouter</button>
-      </form>
+      <div style={s.card}>
+        <h2 style={s.cardTitle}>Nouvelle tache</h2>
+        <form onSubmit={ajouter} style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <input
+            style={{ ...s.input, width: 220 }}
+            placeholder="Titre"
+            value={form.titre}
+            onChange={(e) => setForm({ ...form, titre: e.target.value })}
+            required
+          />
+          <input
+            style={{ ...s.input, width: 180 }}
+            placeholder="Projet"
+            value={form.projet}
+            onChange={(e) => setForm({ ...form, projet: e.target.value })}
+          />
+          <input style={{ ...s.input, width: 150 }} type="date" value={form.echeance} onChange={(e) => setForm({ ...form, echeance: e.target.value })} />
+          <button style={s.button} type="submit">Ajouter</button>
+        </form>
+      </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={s.errorText}>{error}</p>}
 
       {taches.map((t) => (
-        <div key={t.id} style={{ border: '1px solid #ccc', borderRadius: 8, padding: '0.75rem', marginBottom: '0.5rem' }}>
+        <div key={t.id} style={s.card}>
           <strong>{t.titre}</strong> {t.projet && `(${t.projet})`}
           {t.echeance && ` — echeance: ${t.echeance}`}
-          <div style={{ margin: '0.5rem 0' }}>
-            <select value={t.statut} onChange={(e) => changerStatut(t.id, e.target.value)}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', margin: '0.6rem 0' }}>
+            <select style={{ ...s.select, width: 150 }} value={t.statut} onChange={(e) => changerStatut(t.id, e.target.value)}>
               <option value="a_faire">A faire</option>
               <option value="en_cours">En cours</option>
               <option value="termine">Termine</option>
             </select>
             <button
+              style={s.buttonSecondary}
               onClick={() => enrichir(t.id)}
               disabled={enrichissementEnCours === t.id}
-              style={{ marginLeft: '0.5rem' }}
             >
               {enrichissementEnCours === t.id ? 'Recherche...' : 'Enrichir (recherche web)'}
             </button>
-            <button onClick={() => supprimer(t.id)} style={{ marginLeft: '0.5rem' }}>
+            <button style={s.buttonDanger} onClick={() => supprimer(t.id)}>
               Suppr.
             </button>
           </div>
           {t.notes_ia && (
             <details>
               <summary>Notes IA</summary>
-              <pre style={{ whiteSpace: 'pre-wrap' }}>{t.notes_ia}</pre>
+              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{t.notes_ia}</pre>
             </details>
           )}
         </div>

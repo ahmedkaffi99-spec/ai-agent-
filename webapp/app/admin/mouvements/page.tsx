@@ -62,7 +62,7 @@ export default function MouvementsPage() {
     const n = nouveaux[section];
     return (
       <div style={s.card} key={section}>
-        <h2 style={{ marginTop: 0 }}>{titres[section]}</h2>
+        <h2 style={s.cardTitle}>{titres[section]}</h2>
         <table style={s.table}>
           <thead>
             <tr>
@@ -108,16 +108,17 @@ export default function MouvementsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 960, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Mouvements de fonds</h1>
+    <div style={s.page}>
+      <h1 style={s.pageTitle}>Mouvements de fonds</h1>
+      <p style={s.pageSubtitle}>Entrant / sortant / balance, par mois.</p>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', alignItems: 'center' }}>
-        <input type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
-        <input type="month" value={mois} onChange={(e) => setMois(e.target.value)} />
+      <div style={s.toolbar}>
+        <input style={{ ...s.input, width: 200 }} type="password" placeholder="Mot de passe admin" value={secret} onChange={(e) => setSecret(e.target.value)} />
+        <input style={{ ...s.input, width: 170 }} type="month" value={mois} onChange={(e) => setMois(e.target.value)} />
         <button style={s.button} onClick={charger}>Charger</button>
       </div>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <p style={s.errorText}>{error}</p>}
 
       {renderSection('entrant')}
       {renderSection('sortant')}
